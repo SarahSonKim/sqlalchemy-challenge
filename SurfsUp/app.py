@@ -20,7 +20,7 @@ app = Flask(__name__)
 
 # Define the most recent date and one year ago
 most_recent_date = session.query(func.max(Measurements.date)).scalar()
-most_recent_date = dt.datetime.strptime(most_recent_date, '%Y-%m-%d')
+most_recent_date = dt.datetime.strptime(str(most_recent_date), '%Y-%m-%d')
 one_year_ago = most_recent_date - dt.timedelta(days=365)
 
 # Define routes
@@ -72,7 +72,7 @@ def tobs():
 @app.route("/api/v1.0/<start>")
 def calc_temps_start(start):
     # Query temperature stats from a start date to the latest date
-    start_date = dt.datetime.strptime(start, '%Y-%m-%d')
+    start_date = dt.datetime.strptime(str(start), '%Y-%m-%d')
     temp_results = session.query(func.min(Measurements.tobs), func.avg(Measurements.tobs), func.max(Measurements.tobs))\
         .filter(Measurements.date >= start_date)\
         .all()
@@ -83,8 +83,8 @@ def calc_temps_start(start):
 @app.route("/api/v1.0/<start>/<end>")
 def calc_temps_start_end(start, end):
     # Query temperature stats from a start date to an end date
-    start_date = dt.datetime.strptime(start, '%Y-%m-%d')
-    end_date = dt.datetime.strptime(end, '%Y-%m-%d')
+    start_date = dt.datetime.strptime(str(start), '%Y-%m-%d')
+    end_date = dt.datetime.strptime(str(end), '%Y-%m-%d')
     temp_results = session.query(func.min(Measurements.tobs), func.avg(Measurements.tobs), func.max(Measurements.tobs))\
         .filter(Measurements.date >= start_date)\
         .filter(Measurements.date <= end_date)\
