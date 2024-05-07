@@ -38,21 +38,25 @@ def welcome():
 
 @app.route("/api/v1.0/precipitation")
 def precipitation():
+    # Query precipitation data for the last year
     results = session.query(Measurements.date, Measurements.prcp)\
         .filter(Measurements.date >= one_year_ago)\
         .order_by(Measurements.date)\
         .all()
+    # Convert results to dictionary
     precipitation_dict = {date: prcp for date, prcp in results}
     return jsonify(precipitation_dict)
 
 @app.route("/api/v1.0/stations")
 def stations():
+    # Query list of stations
     station_results = session.query(Stations.station).all()
     stations_list = [station[0] for station in station_results]
     return jsonify(stations_list)
 
 @app.route("/api/v1.0/tobs")
 def tobs():
+    # Query temperature observations for the most active station for the last year
     most_active_station = session.query(Measurements.station, func.count(Measurements.station))\
         .group_by(Measurements.station)\
         .order_by(func.count(Measurements.station).desc())\
@@ -61,26 +65,31 @@ def tobs():
         .filter(Measurements.station == most_active_station)\
         .filter(Measurements.date >= one_year_ago)\
         .all()
+    # Convert results to list of dictionaries
     tobs_list = [{'date': date, 'tobs': tobs} for date, tobs in tobs_results]
     return jsonify(tobs_list)
 
 @app.route("/api/v1.0/<start>")
 def calc_temps_start(start):
+    # Query temperature stats from a start date to the latest date
     start_date = dt.datetime.strptime(start, '%Y-%m-%d')
     temp_results = session.query(func.min(Measurements.tobs), func.avg(Measurements.tobs), func.max(Measurements.tobs))\
         .filter(Measurements.date >= start_date)\
         .all()
+    # Convert results to list of dictionaries
     temp_list = [{'TMIN': result[0], 'TAVG': result[1], 'TMAX': result[2]} for result in temp_results]
     return jsonify(temp_list)
 
 @app.route("/api/v1.0/<start>/<end>")
 def calc_temps_start_end(start, end):
+    # Query temperature stats from a start date to an end date
     start_date = dt.datetime.strptime(start, '%Y-%m-%d')
     end_date = dt.datetime.strptime(end, '%Y-%m-%d')
     temp_results = session.query(func.min(Measurements.tobs), func.avg(Measurements.tobs), func.max(Measurements.tobs))\
         .filter(Measurements.date >= start_date)\
         .filter(Measurements.date <= end_date)\
         .all()
+    # Convert results to list of dictionaries
     temp_list = [{'TMIN': result[0], 'TAVG': result[1], 'TMAX': result[2]} for result in temp_results]
     return jsonify(temp_list)
 
